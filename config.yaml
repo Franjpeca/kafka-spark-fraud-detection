@@ -7,43 +7,59 @@
 #  Rutas de datos del Data Lake (Medallion Architecture)
 # ---------------------------------------------------
 paths:
+
+  # -------------------------------
+  # Carpeta general de logs
+  # -------------------------------
   logs:
     root: "logs/"
 
+  # -------------------------------
+  # Capa RAW (entrada original)
+  # -------------------------------
   data_raw:
     root: "data/raw/"
 
     datasets:
       root: "data/raw/datasets/"
-      paysim: "data/raw/datasets/PaySim1.csv"
+      paysim: "data/raw/datasets/PaySim1.csv"  # ← renombrado para consistencia
 
-
+  # -------------------------------
+  # Capa BRONZE (datos limpiados sin transformar)
+  # -------------------------------
   data_bronze:
     root: "data/bronze/"
+    paysim_preprocessed: "data/bronze/paysim_preprocessed.parquet"
 
+  # -------------------------------
+  # Capa SILVER (datos transformados / agregados)
+  # -------------------------------
   data_silver:
     root: "data/silver/"
 
+  # -------------------------------
+  # Capa GOLD (datos para consumo final / BI / ML)
+  # -------------------------------
   data_gold:
     root: "data/gold/"
 
 # ---------------------------------------------------
-#  Configuracion del Generador de Transacciones (Producer)
+#  Configuración del Generador de Transacciones (Producer)
 # ---------------------------------------------------
 
 
 # ---------------------------------------------------
-#  Configuracion de Apache Kafka
+#  Configuración de Apache Kafka
 # ---------------------------------------------------
 
 
 # ---------------------------------------------------
-#  Configuracion de Spark Structured Streaming
+#  Configuración de Spark Structured Streaming
 # ---------------------------------------------------
 
 
 # ---------------------------------------------------
-#  Configuracion de PostgreSQL
+#  Configuración de PostgreSQL
 # ---------------------------------------------------
 
 
@@ -53,16 +69,17 @@ paths:
 logging:
   level: "INFO"
   logs_dir: "logs"
+
+  # Ubicaciones de logs por servicio
   producer_log: "logs/producer/producer.log"
   spark_log: "logs/spark/structured_streaming.log"
   api_log: "logs/api/api_access.log"
 
 # ---------------------------------------------------
-#  Parametros basicos del fraude
+#  Parámetros básicos del fraude
 # ---------------------------------------------------
 
 
 # ---------------------------------------------------
-#  Parametros para futura fase ML
+#  Parámetros para futura fase ML
 # ---------------------------------------------------
-

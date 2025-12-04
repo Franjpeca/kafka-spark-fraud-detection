@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "kafka-spark-fraud-detection"
+version = "0.1.0"
+description = "Sistema de deteccion de fraude en tiempo real con Kafka y Spark"
+authors = [
+    { name = "Fran", email = "example@example.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "pyyaml",
+]
+
+# Para encontrar los paquetes dentro de src/
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[project.scripts]
+preprocess-paysim = "fraud_detection.preprocess.preprocess_paysim:main"

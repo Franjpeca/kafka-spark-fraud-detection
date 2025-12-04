@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 from typing import List, Dict, Any
 
-from src.config.config_loader import get_config
+from fraud_detection.config.config_loader import get_config
 
 
 

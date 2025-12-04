@@ -1,5 +1,5 @@
 from pathlib import Path
-from src.config.config_loader import get_config
+from fraud_detection.config.config_loader import get_config
 
 
 def test_config_loads():

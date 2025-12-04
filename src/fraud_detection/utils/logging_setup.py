@@ -2,7 +2,8 @@ import logging
 import logging.handlers
 from pathlib import Path
 
-from config.config_loader import get_config
+from fraud_detection.config.config_loader import get_config
+
 
 
 def ensure_directory(path):

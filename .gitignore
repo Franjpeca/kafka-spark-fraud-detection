@@ -4,3 +4,7 @@ data/
 *.pyc
 
 docs/notas.txt
+
+*.rar
+*.zip
+*.tar.gz
