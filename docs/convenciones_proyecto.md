@@ -121,3 +121,18 @@ El sistema está diseñado con una **arquitectura de microservicios**, donde cad
 - Cada servicio tiene su propia base de datos o almacenamiento para evitar dependencias directas.
 - El sistema se basa en **eventos** y **mensajería asíncrona** (Kafka) para asegurar desacoplamiento y resiliencia.
 
+
+# Convención de organización de volúmenes de Docker
+
+- Los **volúmenes de los contenedores Docker** deben ser almacenados en la carpeta `volumes/`, separada de la carpeta `data/`, para evitar mezclar datos de dominio con datos persistentes de infraestructura.
+  
+- Los **volúmenes** se utilizarán para servicios como Kafka, MongoDB y Spark, con sus respectivos datos de logs, bases de datos y otros artefactos persistentes, evitando que la carpeta `data/` se llene con archivos no relacionados directamente con el pipeline de datos (raw, bronze, silver, gold).
+  
+- El almacenamiento de **datos del pipeline (raw, bronze, etc.)** debe seguir dentro de `data/`, mientras que los volúmenes de contenedores (Kafka, MongoDB, etc.) deben ir en `volumes/`.
+  
+- **Estructura recomendada**:
+    - `data/` para datos de entrada y salida procesados (raw → bronze → silver → gold).
+    - `volumes/` para volúmenes de contenedores Docker relacionados con la infraestructura (Kafka, MongoDB, PostgreSQL).
+    - `logs/` para logs del sistema y servicios (Kafka, Spark, API).
+  
+- Usar **bind mounts** cuando se necesite acceso directo al sistema de archivos local desde los contenedores (por ejemplo, para facilitar la visualización de logs o el análisis de datos).

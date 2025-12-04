@@ -1,10 +1,38 @@
+# Ignorar archivos de entorno virtual (Python)
 .venv/
+
+# Ignorar directorios de caché de Python
 __pycache__/
-data/
 *.pyc
+*.pyo
+*.pyd
 
-docs/notas.txt
+# Ignorar archivos generados por editor (si usas algún IDE)
+*.swp
+*.swo
+.idea/
+.vscode/
 
+# Ignorar archivos comprimidos y otros artefactos temporales
 *.rar
 *.zip
 *.tar.gz
+
+# Ignorar archivos de configuración locales o datos temporales
+data/
+*.log
+*.bak
+*.tmp
+
+# Ignorar el archivo de notas (si no lo necesitas en el repositorio)
+docs/notas.txt
+
+# Ignorar cualquier archivo de sistema (Mac, Windows, Linux)
+.DS_Store
+Thumbs.db
+
+# Ignorar la carpeta de volúmenes de Docker (si se usa)
+volumes/
+
+# Ignorar el archivo docker-compose.override.yml si no se usa en producción
+docker-compose.override.yml

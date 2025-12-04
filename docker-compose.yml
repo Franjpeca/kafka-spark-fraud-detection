@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+
+  # Zookeeper (coordinador para Kafka)
+  zookeeper:
+    image: zookeeper:3.9       # Imagen oficial moderna de ZooKeeper :contentReference[oaicite:0]{index=0}
+    ports:
+      - "2181:2181"
+    volumes:
+      - ./volumes/zookeeper:/data/zookeeper
+
+  # Kafka Broker
+  kafka:
+    image: apache/kafka:4.1.1   # Imagen oficial reciente de Kafka :contentReference[oaicite:1]{index=1}
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./volumes/kafka:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+
+  # Spark Master
+  spark-master:
+    image: apache/spark:3.5.2    # Versión moderna de Spark con soporte oficial :contentReference[oaicite:2]{index=2}
+    container_name: spark-master
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
+    environment:
+      SPARK_MASTER_HOST: spark-master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    volumes:
+      - ./volumes/spark/master/logs:/opt/spark/logs
+
+  # Spark Worker
+  spark-worker:
+    image: apache/spark:3.5.2
+    container_name: spark-worker
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    depends_on:
+      - spark-master
+    volumes:
+      - ./volumes/spark/worker/logs:/opt/spark/logs
+
+  # MongoDB (como base NoSQL actual)
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./volumes/mongo:/data/db
+
+  # API FastAPI — si existe tu servicio API
+#  api:
+#    build:
+#      context: ./src/api
+#    ports:
+#      - "8000:80"
+#    depends_on:
+#      - mongo
+#    volumes:
+#      - ./logs/api:/app/logs
+
+volumes:
+  # Volúmenes definidos (si los usas en lugar de bind‑mounts directos)
+  kafka_data:
+  mongo_data:
+  spark_data:
