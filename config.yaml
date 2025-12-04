@@ -1,0 +1,65 @@
+# ===================================================================
+# CONFIGURACION GLOBAL DEL PROYECTO
+# Sistema de deteccion de fraude en tiempo real
+# ===================================================================
+
+# ---------------------------------------------------
+#  Rutas de datos del Data Lake (Medallion Architecture)
+# ---------------------------------------------------
+paths:
+  data_raw:
+    root: "data/raw/"
+
+    datasets:
+      root: "data/raw/datasets/"
+      paysim: "data/raw/datasets/paysim.csv"
+
+
+  data_bronze:
+    root: "data/bronze/"
+
+  data_silver:
+    root: "data/silver/"
+
+  data_gold:
+    root: "data/gold/"
+
+# ---------------------------------------------------
+#  Configuracion del Generador de Transacciones (Producer)
+# ---------------------------------------------------
+
+
+# ---------------------------------------------------
+#  Configuracion de Apache Kafka
+# ---------------------------------------------------
+
+
+# ---------------------------------------------------
+#  Configuracion de Spark Structured Streaming
+# ---------------------------------------------------
+
+
+# ---------------------------------------------------
+#  Configuracion de PostgreSQL
+# ---------------------------------------------------
+
+
+# ---------------------------------------------------
+#  Logging global del sistema
+# ---------------------------------------------------
+logging:
+  level: "INFO"
+  logs_dir: "logs"
+  producer_log: "logs/producer/producer.log"
+  spark_log: "logs/spark/structured_streaming.log"
+  api_log: "logs/api/api_access.log"
+
+# ---------------------------------------------------
+#  Parametros basicos del fraude
+# ---------------------------------------------------
+
+
+# ---------------------------------------------------
+#  Parametros para futura fase ML
+# ---------------------------------------------------
+
