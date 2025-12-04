@@ -1,3 +1,7 @@
+# Tests para el cargador de configuraciones del proyecto.
+# Verifican que config.yaml se carga correctamente y contiene
+# las claves esenciales de rutas del Data Lake.
+
 from pathlib import Path
 from fraud_detection.config.config_loader import get_config
 

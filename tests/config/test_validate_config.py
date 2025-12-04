@@ -1,3 +1,7 @@
+# Test de integración mínimo para el módulo validate_config.
+# Comprueba que el script puede ejecutarse como módulo Python
+# sin errores de importación ni fallos internos.
+
 import subprocess
 from pathlib import Path
 import sys

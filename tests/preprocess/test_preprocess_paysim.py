@@ -1,3 +1,7 @@
+# Tests unitarios del preprocesado inicial de PaySim.
+# Verifican que la función preprocess aplica correctamente
+# las transformaciones básicas: normalización, timestamp y deduplicación.
+
 import pandas as pd
 from fraud_detection.preprocess.preprocess_paysim import preprocess
 

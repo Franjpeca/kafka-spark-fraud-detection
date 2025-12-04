@@ -1,7 +1,5 @@
-# ===================================================================
-#  PREPROCESADO INICIAL DEL DATASET PAYSIM
-#  Sistema de deteccion de fraude en tiempo real
-# ===================================================================
+# PREPROCESADO INICIAL DEL DATASET PAYSIM
+# Sistema de detección de fraude en tiempo real
 
 from pathlib import Path
 import pandas as pd
@@ -14,32 +12,24 @@ from fraud_detection.preprocess.helpers import (
     generate_timestamp_from_step,
 )
 
-
-# ============================================================
-#  Logger del servicio
-#  (scripts auxiliares → logs/maintenance/)
-# ============================================================
+# Logger del servicio (scripts auxiliares → logs/maintenance/)
 logger = get_logger(service_name="maintenance")
 
 
-# ============================================================
-#  Cargar dataset bruto PaySim
-# ============================================================
+# Cargar dataset bruto PaySim
 def load_raw_dataset(raw_path: Path) -> pd.DataFrame:
     logger.info(f"Cargando dataset PaySim desde: {raw_path}")
 
     if not raw_path.exists():
-        logger.error(f"No se encontro el dataset: {raw_path}")
-        raise FileNotFoundError(f"No se encontro el dataset PaySim en {raw_path}")
+        logger.error(f"No se encontró el dataset: {raw_path}")
+        raise FileNotFoundError(f"No se encontró el dataset PaySim en {raw_path}")
 
     df = pd.read_csv(raw_path)
     logger.info(f"Dataset cargado correctamente. Filas={len(df)}, Columnas={len(df.columns)}")
     return df
 
 
-# ============================================================
-#  Preprocesado principal
-# ============================================================
+# Preprocesado principal
 def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     logger.info("Iniciando preprocesado inicial de PaySim...")
 
@@ -47,50 +37,52 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_duplicates(df)
     df = generate_timestamp_from_step(df)
 
-    logger.info("Preprocesado inicial completado con exito.")
+    logger.info("Preprocesado inicial completado con éxito.")
     return df
 
 
-# ============================================================
-#  Guardar dataset en capa Bronze
-# ============================================================
-def save_bronze(df: pd.DataFrame, bronze_path: Path) -> None:
-    logger.info(f"Guardando dataset en Bronze: {bronze_path}")
+# División en múltiples parquets por tipo de transacción
+def save_bronze_by_type(df: pd.DataFrame, bronze_root: Path) -> None:
+    logger.info("Generando parquets individuales por tipo de transacción...")
 
-    bronze_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_parquet(bronze_path, index=False)
+    # Asegurar carpeta bronze
+    bronze_root.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Dataset PaySim guardado correctamente en Bronze.")
+    tipos = df["type"].unique()
+
+    for t in tipos:
+        subset = df[df["type"] == t].copy()
+        filename = f"paysim_{t.lower()}.parquet"
+        out_path = bronze_root / filename
+
+        subset.to_parquet(out_path, index=False)
+        logger.info(f"Archivo Bronze generado: {out_path} (filas={len(subset)})")
+
+    logger.info("Generación de parquets por tipo completada.")
 
 
-# ============================================================
-#  Funcion principal del script
-# ============================================================
+# Función principal del script
 def main():
     logger.info("=== INICIO PREPROCESADO PAYSIM ===")
 
     config = get_config()
 
     try:
-        # ---------------------------------------------------
-        # Acceso a rutas segun config.yaml
-        # ---------------------------------------------------
         raw_path = Path(config["paths"]["data_raw"]["datasets"]["paysim"])
-        bronze_path = Path(config["paths"]["data_bronze"]["paysim_preprocessed"])
-
+        bronze_root = Path(config["paths"]["data_bronze"]["root"])
     except KeyError as e:
         logger.error(f"Clave faltante en config.yaml: {e}")
         raise
 
     df_raw = load_raw_dataset(raw_path)
     df_clean = preprocess(df_raw)
-    save_bronze(df_clean, bronze_path)
+
+    # Guardar múltiples parquets por tipo
+    save_bronze_by_type(df_clean, bronze_root)
 
     logger.info("=== FIN PREPROCESADO PAYSIM ===")
 
 
-# ============================================================
-#  Punto de entrada del script
-# ============================================================
+# Punto de entrada del script
 if __name__ == "__main__":
     main()
