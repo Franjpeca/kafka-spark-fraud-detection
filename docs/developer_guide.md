@@ -2,6 +2,30 @@
 Guía técnica para ejecutar y operar el proyecto durante el desarrollo.
 
 
+# Acceso al entorno en windows
+Comando:
+
+    .\.venv\Scripts\activate
+
+
+# 0. Logging del proyecto
+
+El sistema de logging se utiliza mediante la funcion `get_logger()`.
+
+Ejemplo basico:
+
+    from utils.logging_setup import get_logger
+    logger = get_logger("producer")
+    logger.info("Mensaje de prueba")
+
+Donde "producer" corresponde a la carpeta `logs/producer/`.
+
+Los logs se almacenan de manera rotativa y se escriben en:
+
+    logs/<servicio>/<servicio>.log
+
+Tambien se muestran en consola.
+
 # 1. Validar la configuración del proyecto
 Antes de ejecutar cualquier componente, comprueba que `config.yaml` está completo
 y que todas las rutas y ficheros existen.

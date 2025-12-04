@@ -7,12 +7,15 @@
 #  Rutas de datos del Data Lake (Medallion Architecture)
 # ---------------------------------------------------
 paths:
+  logs:
+    root: "logs/"
+
   data_raw:
     root: "data/raw/"
 
     datasets:
       root: "data/raw/datasets/"
-      paysim: "data/raw/datasets/paysim.csv"
+      paysim: "data/raw/datasets/PaySim1.csv"
 
 
   data_bronze:

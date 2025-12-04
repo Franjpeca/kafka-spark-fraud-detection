@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 from typing import List, Dict, Any
 
-from config.config_loader import get_config
+from src.config.config_loader import get_config
 
 
 

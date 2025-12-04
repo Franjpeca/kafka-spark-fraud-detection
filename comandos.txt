@@ -1,2 +1,0 @@
-# Entrar al entorno
-.\.venv\Scripts\activate
