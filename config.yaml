@@ -22,7 +22,7 @@ paths:
 
     datasets:
       root: "data/raw/datasets/"
-      paysim: "data/raw/datasets/PaySim1.csv"  # ← renombrado para consistencia
+      paysim: "data/raw/datasets/PaySim1.csv"
 
   # -------------------------------
   # Capa BRONZE (datos limpiados sin transformar)
@@ -44,42 +44,28 @@ paths:
     root: "data/gold/"
 
 # ---------------------------------------------------
-#  Configuración del Generador de Transacciones (Producer)
-# ---------------------------------------------------
-
-
-# ---------------------------------------------------
-#  Configuración de Apache Kafka
-# ---------------------------------------------------
-
-
-# ---------------------------------------------------
-#  Configuración de Spark Structured Streaming
-# ---------------------------------------------------
-
-
-# ---------------------------------------------------
-#  Configuración de PostgreSQL
-# ---------------------------------------------------
-
-
-# ---------------------------------------------------
-#  Logging global del sistema
+#  Configuración de Logging global
 # ---------------------------------------------------
 logging:
   level: "INFO"
   logs_dir: "logs"
-
-  # Ubicaciones de logs por servicio
   producer_log: "logs/producer/producer.log"
   spark_log: "logs/spark/structured_streaming.log"
   api_log: "logs/api/api_access.log"
 
 # ---------------------------------------------------
-#  Parámetros básicos del fraude
+#  Configuración del Generador de Transacciones (Producer)
 # ---------------------------------------------------
 
+# ---------------------------------------------------
+#  Configuración de Kafka
+# ---------------------------------------------------
 
 # ---------------------------------------------------
-#  Parámetros para futura fase ML
+#  Configuración de Spark Structured Streaming
 # ---------------------------------------------------
+
+# ---------------------------------------------------
+#  Configuración de PostgreSQL
+# ---------------------------------------------------
+

@@ -136,3 +136,8 @@ El sistema está diseñado con una **arquitectura de microservicios**, donde cad
     - `logs/` para logs del sistema y servicios (Kafka, Spark, API).
   
 - Usar **bind mounts** cuando se necesite acceso directo al sistema de archivos local desde los contenedores (por ejemplo, para facilitar la visualización de logs o el análisis de datos).
+
+
+# Convenciones de Configuración
+
+En este proyecto, **las variables sensibles como credenciales y puertos** se gestionan en el archivo `.env`, mientras que **las configuraciones internas** (rutas de datos, estructuras de directorios) se colocan en el archivo `config.yml`. El archivo `docker-compose.yml` hace referencia a las variables del `.env`, garantizando flexibilidad y seguridad, sin exponer datos sensibles en el repositorio. Se utilizan volúmenes y redes para gestionar la persistencia de datos entre contenedores, y se asegura que el proyecto sea fácilmente configurable para diferentes entornos (desarrollo, producción).

@@ -1,77 +1,74 @@
 version: "3.8"
 
 services:
-
-  # Zookeeper (coordinador para Kafka)
   zookeeper:
-    image: zookeeper:3.9       # Imagen oficial moderna de ZooKeeper :contentReference[oaicite:0]{index=0}
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
     ports:
-      - "2181:2181"
-    volumes:
-      - ./volumes/zookeeper:/data/zookeeper
-
-  # Kafka Broker
-  kafka:
-    image: apache/kafka:4.1.1   # Imagen oficial reciente de Kafka :contentReference[oaicite:1]{index=1}
+      - "${ZK_PORT}:${ZK_PORT}"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-    ports:
-      - "9092:9092"
+      ZOOKEEPER_CLIENT_PORT: ${ZK_PORT}
+      ZOOKEEPER_TICK_TIME: 2000
     volumes:
-      - ./volumes/kafka:/var/lib/kafka/data
+      - ${KAFKA_DATA_DIR}/zookeeper:/var/lib/zookeeper/data
+    restart: unless-stopped
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
     depends_on:
       - zookeeper
+    ports:
+      - "${KAFKA_PORT}:${KAFKA_PORT}"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_LISTENERS: ${KAFKA_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+    volumes:
+      - ${KAFKA_DATA_DIR}/kafka:/var/lib/kafka/data
+    restart: unless-stopped
 
-  # Spark Master
   spark-master:
-    image: apache/spark:3.5.2    # Versión moderna de Spark con soporte oficial :contentReference[oaicite:2]{index=2}
+    image: apache/spark:3.5.2
     container_name: spark-master
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
     environment:
       SPARK_MASTER_HOST: spark-master
     ports:
-      - "7077:7077"
+      - "${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}"
       - "8080:8080"
     volumes:
-      - ./volumes/spark/master/logs:/opt/spark/logs
+      - ${SPARK_MASTER_LOGS}:/opt/spark/logs
+    restart: unless-stopped
 
-  # Spark Worker
   spark-worker:
     image: apache/spark:3.5.2
     container_name: spark-worker
-    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:${SPARK_MASTER_PORT}"]
     depends_on:
       - spark-master
     volumes:
-      - ./volumes/spark/worker/logs:/opt/spark/logs
+      - ${SPARK_WORKER_LOGS}:/opt/spark/logs
+    restart: unless-stopped
 
-  # MongoDB (como base NoSQL actual)
   mongo:
     image: mongo:latest
     container_name: mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:${MONGO_PORT}"
     volumes:
-      - ./volumes/mongo:/data/db
-
-  # API FastAPI — si existe tu servicio API
-#  api:
-#    build:
-#      context: ./src/api
-#    ports:
-#      - "8000:80"
-#    depends_on:
-#      - mongo
-#    volumes:
-#      - ./logs/api:/app/logs
+      - ${MONGO_DATA_DIR}:/data/db
+    restart: unless-stopped
 
 volumes:
-  # Volúmenes definidos (si los usas en lugar de bind‑mounts directos)
-  kafka_data:
-  mongo_data:
-  spark_data:
+  spark_master:
+  spark_worker:
+  mongo:
+  kafka:
