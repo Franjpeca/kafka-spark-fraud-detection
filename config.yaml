@@ -29,7 +29,11 @@ paths:
   # -------------------------------
   data_bronze:
     root: "data/bronze/"
-    paysim_preprocessed: "data/bronze/paysim_preprocessed.parquet"
+    paysim_cash_in_parquet: "data/bronze/paysim_cash_in.parquet"
+    paysim_cash_out_parquet: "data/bronze/paysim_cash_out.parquet"
+    paysim_debit_parquet: "data/bronze/paysim_debit.parquet"
+    paysim_payment_parquet: "data/bronze/paysim_payment.parquet"
+    paysim_transfer_parquet: "data/bronze/paysim_transfer.parquet"
 
   # -------------------------------
   # Capa SILVER (datos transformados / agregados)
@@ -60,7 +64,15 @@ logging:
 # ---------------------------------------------------
 #  Configuración de Kafka
 # ---------------------------------------------------
-
+kafka:
+  broker: "${KAFKA_ADVERTISED_LISTENERS}"
+  zookeeper: "${KAFKA_ZOOKEEPER_CONNECT}"
+  topics:
+    - "paysim_cash_in"
+    - "paysim_cash_out"
+    - "paysim_debit"
+    - "paysim_payment"
+    - "paysim_transfer"
 # ---------------------------------------------------
 #  Configuración de Spark Structured Streaming
 # ---------------------------------------------------

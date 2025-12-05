@@ -141,3 +141,10 @@ El sistema está diseñado con una **arquitectura de microservicios**, donde cad
 # Convenciones de Configuración
 
 En este proyecto, **las variables sensibles como credenciales y puertos** se gestionan en el archivo `.env`, mientras que **las configuraciones internas** (rutas de datos, estructuras de directorios) se colocan en el archivo `config.yml`. El archivo `docker-compose.yml` hace referencia a las variables del `.env`, garantizando flexibilidad y seguridad, sin exponer datos sensibles en el repositorio. Se utilizan volúmenes y redes para gestionar la persistencia de datos entre contenedores, y se asegura que el proyecto sea fácilmente configurable para diferentes entornos (desarrollo, producción).
+
+
+# Convenciones sobre los topicos de Kafka y conectores
+
+- Se usará la creación automática de tópicos de Apache Kafka durante la fase de desarrollo para agilidad y flexibilidad.  
+- ⚠️ En un futuro, se planifica implementar una estrategia formal de gestión de tópicos y uso de Kafka Connect para integrar bases de datos y sistemas externos de forma escalable.  
+

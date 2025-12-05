@@ -1,3 +1,6 @@
 pyyaml
 pyarrow
 fastparquet
+kafka-python 
+pyarrow 
+pandas

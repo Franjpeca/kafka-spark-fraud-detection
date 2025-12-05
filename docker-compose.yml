@@ -19,18 +19,21 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "${KAFKA_PORT}:${KAFKA_PORT}"
+      - "${KAFKA_PORT}:${KAFKA_PORT}"  # Exponer el puerto correctamente
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
-      KAFKA_LISTENERS: ${KAFKA_LISTENERS}
-      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
-      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
-      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}  # Zookeeper conectado correctamente
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092  # Escuchar en todos los interfaces
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # Usar localhost para desarrollo
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"  # Desactivar métricas de Confluent si no las necesitas
     volumes:
-      - ${KAFKA_DATA_DIR}/kafka:/var/lib/kafka/data
+      - ${KAFKA_DATA_DIR}/kafka:/var/lib/kafka/data  # Persistencia de datos
     restart: unless-stopped
+
 
   spark-master:
     image: apache/spark:3.5.2

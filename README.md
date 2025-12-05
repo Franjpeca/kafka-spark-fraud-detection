@@ -23,27 +23,25 @@ kafka-spark-fraud-detection/
 │   ├── services/        # Kafka / Zookeeper / PostgreSQL
 │   ├── maintenance/     # scripts auxiliares, validación, limpieza
 │   └── archived/
-│
-├── src/
-│   ├── config/
+│├── src/                      # todo el código fuente Python / lógica del proyecto
+│   ├── config/               # carga/validación de configuración
 │   │   ├── config_loader.py
 │   │   └── validate_config.py
 │   │
-│   ├── utils/
+│   ├── utils/                # utilidades genéricas: logging, helpers, etc.
 │   │   └── logging_setup.py
 │   │
-│   ├── preprocess/                    
-│   │   ├── preprocess_paysim.py       # limpieza + feature engineering del CSV
-│   │   └── helpers.py                 # funciones auxiliares opcionales
+│   ├── preprocess/           # transformaciones “batch / ETL / limpieza / feature‑engineer”
+│   │   └── preprocess_paysim.py
 │   │
-│   ├── producer/
-│   │   └── paysim_producer.py         # envía eventos a Kafka
+│   ├── producer/             # productor(s): lee datos desde data/raw → publica a Kafka (o similar)
+│   │   └── paysim_producer.py
 │   │
-│   ├── spark/
-│   │   └── streaming_job.py           # Spark Structured Streaming
+│   ├── spark/                # jobs / lógica de streaming / procesamiento con Spark
+│   │   └── streaming_job.py
 │   │
-│   ├── api/
-│   │   └── app.py                     # FastAPI
+│   ├── api/                  # código de servicio / API / backend (si usas FastAPI u otro)
+│   │   └── app.py
 │   │
 │   └── __init__.py
 │

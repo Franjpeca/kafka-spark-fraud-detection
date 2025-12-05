@@ -1,8 +1,9 @@
+# Test para verificar que los contenedores de Docker están corriendo y accesibles
+
 import pytest
 import subprocess
 import socket
 
-# Test para verificar que los contenedores de Docker están corriendo y accesibles
 def test_docker_containers():
     # Lista de contenedores que queremos validar
     containers = ["zookeeper", "kafka", "spark-master", "spark-worker", "mongo"]
