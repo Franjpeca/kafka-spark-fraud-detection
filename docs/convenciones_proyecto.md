@@ -1,150 +1,107 @@
-# Convenciones del proyecto
 
-## Gestión de rutas
-Todas las rutas deben obtenerse desde `config.yaml` mediante la función 
-`get_config()` ubicada en `src/config/config_loader.py`.
+# Convenciones del Proyecto
 
-No se permite hardcodear rutas dentro de los scripts.
-Si una ruta no existe en el config, debe añadirse allí antes de usarla.
+## 1. Gestión de Rutas
 
+Todas las rutas deben ser obtenidas desde `config.yaml` mediante la función `get_config()` ubicada en `src/config/config_loader.py`. No se permite hardcodear rutas dentro de los scripts. Si una ruta no existe en el config, debe añadirse allí antes de usarla.
 
-## Logging del proyecto
+## 2. Logging del Proyecto
 
-Todos los servicios deben registrar sus logs en la carpeta `logs/` situada en la raíz del proyecto. 
-Los logs no deben guardarse dentro de `src/` ni mezclarse con el código.
+Todos los servicios deben registrar sus logs en la carpeta `logs/` situada en la raíz del proyecto. Los logs no deben guardarse dentro de `src/`. Cada componente del sistema debe escribir únicamente en su propia carpeta de logs.
 
-Estructura acordada:
+**Estructura acordada de logs:**
+- `logs/producer/`: Registros del generador de eventos (productor Kafka)
+- `logs/spark/`: Registros del job de Spark Streaming
+- `logs/api/`: Registros de la API FastAPI
+- `logs/services/`: Registros de servicios externos (Kafka, Zookeeper, PostgreSQL)
+- `logs/maintenance/`: Registros de scripts auxiliares (validación, limpieza, preparación de datos)
+- `logs/archived/`: Logs antiguos archivados o rotados
 
-logs/
-  producer/      registros del generador de eventos (productor Kafka)
-  spark/         registros del job de Spark Streaming
-  api/           registros de la API FastAPI
-  services/      registros de servicios externos (Kafka, Zookeeper, PostgreSQL, etc.)
-  maintenance/   registros de scripts auxiliares (validación, limpieza, preparación de datos)
-  archived/      logs antiguos archivados o rotados
+Los logs deben generarse siempre mediante el sistema de logging centralizado, evitando `print()` y usando el nombre del servicio correspondiente para mantener consistencia y trazabilidad.
 
-Cada componente del sistema debe escribir únicamente en su propia carpeta de logs.
+## 3. Configuración y Secrets
 
-Los scripts auxiliares del proyecto, como validadores, preprocesadores o herramientas de mantenimiento,
-deben registrar su actividad en `logs/maintenance/`.
+**Configuración**: Las variables sensibles como credenciales y puertos se gestionan en el archivo `.env`. Las configuraciones internas (rutas de datos, estructuras de directorios) se colocan en `config.yml`.
 
-Los logs se deben mantener separados por servicio para facilitar la depuración, trazabilidad
-y futura integración con herramientas de observabilidad.
+**Secretos y Variables**: Se debe evitar almacenar valores sensibles directamente en el código. En su lugar, usar el archivo `.env` para gestionar las variables de entorno.
 
-Los logs deben generarse siempre mediante el sistema de logging centralizado definido en el proyecto, evitando print() y usando el nombre de servicio correspondiente para mantener consistencia y trazabilidad.
+## 4. Tests
 
+Por ahora, el proyecto utilizará la configuración `pythonpath` en `pytest.ini` para permitir imports estables durante el desarrollo. En el futuro, cuando el proyecto sea instalable o ejecutable por terceros, se migrará a una estructura profesional basada en `pyproject.toml` y una instalación editable (usando `pip install -e .`).
 
-## Sobre los test
+### Ejecución de Tests
 
-Por ahora, el proyecto utilizará la configuración pythonpath en pytest.ini para permitir imports estables durante el desarrollo. Más adelante, cuando el proyecto deba ser instalable o ejecutable por terceros, se migrará a una estructura profesional basada en pyproject.toml y una instalación editable (pip install -e .).
+Para ejecutar los tests, usa el siguiente comando:
 
+```bash
+pytest -q
+```
 
-## Importaciones
+Para ejecutar los tests con cobertura:
 
-CONVENCIONES DE IMPORTACIÓN DEL PROYECTO
+```bash
+pytest --cov=src
+```
 
-1. El proyecto usa estructura src/ con paquete instalado en editable.
-   El nombre del paquete raíz es: fraud_detection
+## 5. Importaciones
 
-2. Todos los imports deben usar el paquete fraud_detection.
-   Ejemplos correctos:
-       from fraud_detection.config.config_loader import get_config
-       from fraud_detection.preprocess.preprocess_paysim import preprocess
-       from fraud_detection.utils.logging_setup import get_logger
+**Convenciones de Importación**:
 
+1. El proyecto usa estructura `src/` con paquete instalado en editable. El nombre del paquete raíz es: `fraud_detection`.
+2. Todos los imports deben usar el paquete `fraud_detection`. Ejemplos correctos:
+   ```python
+   from fraud_detection.config.config_loader import get_config
+   from fraud_detection.preprocess.preprocess_paysim import preprocess
+   from fraud_detection.utils.logging_setup import get_logger
+   ```
 3. Nunca usar imports basados en rutas físicas:
-       NO: from src.config... 
-       NO: import preprocess_paysim
+   ```python
+   NO: from src.config... 
+   NO: import preprocess_paysim
+   ```
 
 4. Para ejecutar módulos internos, usar:
-       python -m fraud_detection.<submodulo>.<script>
 
-5. Tras clonar o actualizar el proyecto, instalar siempre en editable:
-       pip install -e .
+   ```bash
+   python -m fraud_detection.<submodulo>.<script>
+   ```
 
-6. Los tests también deben usar imports basados en el paquete:
-       from fraud_detection.config.config_loader import get_config
-       from fraud_detection.preprocess.preprocess_paysim import preprocess
+5. Tras clonar o actualizar el proyecto, siempre instalar en editable:
 
-7. Todas las carpetas dentro de src/fraud_detection/ deben tener __init__.py
-   para ser reconocidas como módulos importables.
+   ```bash
+   pip install -e .
+   ```
 
-Resumen:
-Usar siempre imports basados en fraud_detection.
-Nunca usar rutas relativas al directorio src/.
+6. Los tests deben usar imports basados en el paquete.
 
+## 6. Convenciones de Arquitectura — Microservicios & Flujo de Datos
 
-# Convenciones / Arquitectura — Microservicios & Flujo de Datos
+El sistema está diseñado con una arquitectura de microservicios y se comunica a través de Kafka como bus de eventos. Esto permite escalabilidad, desacoplamiento y flexibilidad.
 
-## Arquitectura General
+### Microservicios Principales
 
-El sistema está diseñado con una **arquitectura de microservicios**, donde cada servicio tiene una **responsabilidad clara** y se comunica a través de **Kafka** como bus de eventos. Esto proporciona **escalabilidad**, **desacoplamiento** y **flexibilidad**.
+1. **Productores de Kafka**: Publican eventos en Kafka (ej., transacciones de pago).
+2. **Procesamiento en tiempo real (Spark)**: Consume los eventos desde Kafka.
+3. **Persistencia histórica**: Almacena los datos procesados (MongoDB, PostgreSQL, etc.).
+4. **Almacenamiento de logs / auditoría**: Almacena eventos “raw” para trazabilidad y auditoría.
+5. **Servicio de métricas**: Calcula métricas en tiempo real.
+6. **Servicio de alertas**: Genera notificaciones o alertas en caso de eventos críticos.
+7. **API de consulta**: Exposición de los datos procesados a través de una API.
 
-## Microservicios Principales
+**Ventajas**:
+- Escalabilidad independiente para cada servicio.
+- Desacoplamiento de servicios mediante Kafka y APIs.
+- Flexibilidad para la evolución del sistema sin afectar a la estructura global.
 
-1. **Productores de Kafka**  
-   Publican eventos en Kafka (por ejemplo, transacciones de pago).
+## 7. Volúmenes de Docker
 
-2. **Procesamiento en tiempo real (ej. Spark)**  
-   Consume los eventos desde Kafka y aplica lógica de negocio, como la detección de fraude.
+Los volúmenes se almacenan en la carpeta `volumes/`, separada de la carpeta `data/`, para evitar mezclar datos de dominio con datos persistentes de infraestructura.
 
-3. **Persistencia histórica**  
-   Almacena los datos procesados de manera estructurada, usando bases de datos (MongoDB, PostgreSQL, etc.).
+**Estructura recomendada**:
+- `data/`: Para datos de entrada y salida procesados.
+- `volumes/`: Para volúmenes de contenedores Docker (Kafka, MongoDB, etc.).
+- `logs/`: Para logs del sistema y servicios.
 
-4. **Almacenamiento de logs / auditoría (opcional)**  
-   Almacena eventos “raw” para trazabilidad y auditoría, permitiendo reconstruir el flujo de eventos.
+## 8. Configuración
 
-5. **Servicio de métricas / estadísticas**  
-   Calcula métricas y estadísticas en tiempo real o casi real, como volúmenes de transacciones, tasas de fraude, etc.
-
-6. **Servicio de alertas**  
-   Genera notificaciones o alertas cuando se detectan eventos críticos, como transacciones fraudulentas.
-
-7. **API de consulta**  
-   Expone los datos procesados a través de una API para su consulta por otros sistemas o usuarios.
-
-## Ventajas de la Arquitectura
-
-- **Escalabilidad independiente**: Cada servicio puede escalar por separado según sus necesidades.
-- **Desacoplamiento**: Los servicios interactúan mediante Kafka y/o APIs, lo que facilita su desarrollo y mantenimiento independiente.
-- **Flexibilidad**: Permite la evolución y adición de nuevos servicios sin afectar al sistema global.
-
-## Flujo de Datos
-
-1. Los **productores** publican eventos en Kafka.
-2. Los **consumidores** (como **Spark**) procesan los datos en tiempo real.
-3. Los **resultados procesados** se almacenan en la base de datos o se envían a otro servicio (alertas, métricas, etc.).
-4. Los servicios de **notificación** y **API** exponen resultados o generan alertas.
-
-## Notas
-
-- Cada servicio tiene su propia base de datos o almacenamiento para evitar dependencias directas.
-- El sistema se basa en **eventos** y **mensajería asíncrona** (Kafka) para asegurar desacoplamiento y resiliencia.
-
-
-# Convención de organización de volúmenes de Docker
-
-- Los **volúmenes de los contenedores Docker** deben ser almacenados en la carpeta `volumes/`, separada de la carpeta `data/`, para evitar mezclar datos de dominio con datos persistentes de infraestructura.
-  
-- Los **volúmenes** se utilizarán para servicios como Kafka, MongoDB y Spark, con sus respectivos datos de logs, bases de datos y otros artefactos persistentes, evitando que la carpeta `data/` se llene con archivos no relacionados directamente con el pipeline de datos (raw, bronze, silver, gold).
-  
-- El almacenamiento de **datos del pipeline (raw, bronze, etc.)** debe seguir dentro de `data/`, mientras que los volúmenes de contenedores (Kafka, MongoDB, etc.) deben ir en `volumes/`.
-  
-- **Estructura recomendada**:
-    - `data/` para datos de entrada y salida procesados (raw → bronze → silver → gold).
-    - `volumes/` para volúmenes de contenedores Docker relacionados con la infraestructura (Kafka, MongoDB, PostgreSQL).
-    - `logs/` para logs del sistema y servicios (Kafka, Spark, API).
-  
-- Usar **bind mounts** cuando se necesite acceso directo al sistema de archivos local desde los contenedores (por ejemplo, para facilitar la visualización de logs o el análisis de datos).
-
-
-# Convenciones de Configuración
-
-En este proyecto, **las variables sensibles como credenciales y puertos** se gestionan en el archivo `.env`, mientras que **las configuraciones internas** (rutas de datos, estructuras de directorios) se colocan en el archivo `config.yml`. El archivo `docker-compose.yml` hace referencia a las variables del `.env`, garantizando flexibilidad y seguridad, sin exponer datos sensibles en el repositorio. Se utilizan volúmenes y redes para gestionar la persistencia de datos entre contenedores, y se asegura que el proyecto sea fácilmente configurable para diferentes entornos (desarrollo, producción).
-
-
-# Convenciones sobre los topicos de Kafka y conectores
-
-- Se usará la creación automática de tópicos de Apache Kafka durante la fase de desarrollo para agilidad y flexibilidad.  
-- ⚠️ En un futuro, se planifica implementar una estrategia formal de gestión de tópicos y uso de Kafka Connect para integrar bases de datos y sistemas externos de forma escalable.  
-
+Las variables sensibles van en `.env` y las configuraciones internas en `config.yml`.

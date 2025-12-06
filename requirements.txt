@@ -4,3 +4,4 @@ fastparquet
 kafka-python 
 pyarrow 
 pandas
+faker

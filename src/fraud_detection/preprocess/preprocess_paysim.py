@@ -1,8 +1,13 @@
-# PREPROCESADO INICIAL DEL DATASET PAYSIM
-# Sistema de detección de fraude en tiempo real
+# PREPROCESADO + ENRIQUECIMIENTO + DIVISIÓN EN PARQUETS POR CHUNK
+# Cada parquet representa una "fuente" distinta para Kafka
 
 from pathlib import Path
 import pandas as pd
+import random
+from faker import Faker
+import uuid
+from datetime import datetime, timedelta
+import math
 
 from fraud_detection.config.config_loader import get_config
 from fraud_detection.utils.logging_setup import get_logger
@@ -12,77 +17,121 @@ from fraud_detection.preprocess.helpers import (
     generate_timestamp_from_step,
 )
 
-# Logger del servicio (scripts auxiliares → logs/maintenance/)
 logger = get_logger(service_name="maintenance")
+fake = Faker()
+
+CHUNK_SIZE = 75000
 
 
-# Cargar dataset bruto PaySim
-def load_raw_dataset(raw_path: Path) -> pd.DataFrame:
-    logger.info(f"Cargando dataset PaySim desde: {raw_path}")
+# ---------------------------------------------------------
+# Enriquecimiento por chunk
+# ---------------------------------------------------------
+def enrich_chunk(df: pd.DataFrame, source_label: str) -> pd.DataFrame:
+    n = len(df)
+    if n == 0:
+        return df
 
-    if not raw_path.exists():
-        logger.error(f"No se encontró el dataset: {raw_path}")
-        raise FileNotFoundError(f"No se encontró el dataset PaySim en {raw_path}")
+    df["customer_id"] = [str(uuid.uuid4()) for _ in range(n)]
+    df["source_system"] = source_label
 
-    df = pd.read_csv(raw_path)
-    logger.info(f"Dataset cargado correctamente. Filas={len(df)}, Columnas={len(df.columns)}")
+    if "timestamp" in df.columns:
+        df["transaction_datetime"] = df["timestamp"].apply(
+            lambda ts: datetime.fromtimestamp(ts) +
+                       timedelta(seconds=random.randint(0, 3600))
+        )
+    else:
+        df["transaction_datetime"] = datetime.now()
+
+    df["city"] = [fake.city() for _ in range(n)]
+    df["country"] = [fake.country() for _ in range(n)]
+    df["currency"] = [random.choice(["EUR", "USD", "GBP"]) for _ in range(n)]
+    df["channel"] = [
+        random.choice(["ATM", "POS", "ONLINE", "MOBILE", "TRANSFER"])
+        for _ in range(n)
+    ]
+
+    df["merchant"] = [
+        fake.company() if t == "PAYMENT" else None
+        for t in df["type"]
+    ]
+
+    df["status"] = [
+        random.choice(["approved", "declined", "pending"])
+        for _ in range(n)
+    ]
+
     return df
 
 
-# Preprocesado principal
-def preprocess(df: pd.DataFrame) -> pd.DataFrame:
-    logger.info("Iniciando preprocesado inicial de PaySim...")
+# ---------------------------------------------------------
+# Procesamiento principal por chunks
+# ---------------------------------------------------------
+def process_csv_in_chunks(csv_path: Path, bronze_root: Path, chunksize: int = CHUNK_SIZE):
 
-    df = normalize_columns(df)
-    df = remove_duplicates(df)
-    df = generate_timestamp_from_step(df)
+    # -------- CALCULAR FILAS TOTALES SIN CARGAR CSV --------
+    logger.info("Contando filas totales del CSV...")
+    with open(csv_path, "r", encoding="utf-8") as f:
+        total_rows = sum(1 for _ in f) - 1  # Restamos header
 
-    logger.info("Preprocesado inicial completado con éxito.")
-    return df
+    total_chunks = math.ceil(total_rows / chunksize)
+    logger.info(f"Total filas: {total_rows} / Total chunks: {total_chunks}")
 
-
-# División en múltiples parquets por tipo de transacción
-def save_bronze_by_type(df: pd.DataFrame, bronze_root: Path) -> None:
-    logger.info("Generando parquets individuales por tipo de transacción...")
-
-    # Asegurar carpeta bronze
     bronze_root.mkdir(parents=True, exist_ok=True)
 
-    tipos = df["type"].unique()
+    chunk_id = 0
+    processed_rows = 0
 
-    for t in tipos:
-        subset = df[df["type"] == t].copy()
-        filename = f"paysim_{t.lower()}.parquet"
-        out_path = bronze_root / filename
+    for chunk_df in pd.read_csv(csv_path, chunksize=chunksize):
 
-        subset.to_parquet(out_path, index=False)
-        logger.info(f"Archivo Bronze generado: {out_path} (filas={len(subset)})")
+        logger.info(
+            f"Chunk {chunk_id+1}/{total_chunks} leído -- "
+            f"{len(chunk_df)} filas -- faltan {total_chunks - (chunk_id+1)} chunks"
+        )
 
-    logger.info("Generación de parquets por tipo completada.")
+        chunk_df = normalize_columns(chunk_df)
+        chunk_df = remove_duplicates(chunk_df)
+        chunk_df = generate_timestamp_from_step(chunk_df)
+
+        source_label = f"source_{chunk_id}"
+        chunk_df = enrich_chunk(chunk_df, source_label)
+
+        tipos = chunk_df["type"].unique()
+        for t in tipos:
+            sub = chunk_df[chunk_df["type"] == t].copy()
+
+            filename = f"paysim_{t.lower()}_{chunk_id}.parquet"
+            out_path = bronze_root / filename
+
+            sub.to_parquet(out_path, index=False)
+
+            logger.info(
+                f"Parquet generado: {filename} — {len(sub)} filas — fuente={source_label}"
+            )
+
+        processed_rows += len(chunk_df)
+        chunk_id += 1
+
+        del chunk_df
+
+    logger.info(
+        f"PROCESO COMPLETADO — {processed_rows} filas procesadas en {total_chunks} chunks"
+    )
 
 
-# Función principal del script
+# ---------------------------------------------------------
+# Main
+# ---------------------------------------------------------
 def main():
-    logger.info("=== INICIO PREPROCESADO PAYSIM ===")
+    logger.info("=== INICIO PREPROCESADO CHUNKED ===")
 
-    config = get_config()
+    cfg = get_config()
+    raw_path = Path(cfg["paths"]["data_raw"]["datasets"]["paysim"])
+    bronze_root = Path(cfg["paths"]["data_bronze"]["root"])
 
-    try:
-        raw_path = Path(config["paths"]["data_raw"]["datasets"]["paysim"])
-        bronze_root = Path(config["paths"]["data_bronze"]["root"])
-    except KeyError as e:
-        logger.error(f"Clave faltante en config.yaml: {e}")
-        raise
+    process_csv_in_chunks(raw_path, bronze_root)
 
-    df_raw = load_raw_dataset(raw_path)
-    df_clean = preprocess(df_raw)
-
-    # Guardar múltiples parquets por tipo
-    save_bronze_by_type(df_clean, bronze_root)
-
-    logger.info("=== FIN PREPROCESADO PAYSIM ===")
+    logger.info("=== FIN PREPROCESADO CHUNKED ===")
 
 
-# Punto de entrada del script
 if __name__ == "__main__":
     main()
