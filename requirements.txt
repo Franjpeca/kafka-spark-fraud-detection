@@ -5,3 +5,7 @@ kafka-python
 pyarrow 
 pandas
 faker
+confluent-kafka
+urllib3
+requests
+avro

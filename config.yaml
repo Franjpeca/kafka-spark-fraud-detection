@@ -65,7 +65,7 @@ logging:
 #  Configuración de Kafka
 # ---------------------------------------------------
 kafka:
-  broker: "${KAFKA_ADVERTISED_LISTENERS}"
+  broker: "PLAINTEXT://localhost:29092"
   zookeeper: "${KAFKA_ZOOKEEPER_CONNECT}"
   topics:
     - "paysim_cash_in"
@@ -73,6 +73,14 @@ kafka:
     - "paysim_debit"
     - "paysim_payment"
     - "paysim_transfer"
+
+
+  schema_registry:
+    payment_schema: "src/fraud_detection/schemas/payment_schema.avsc"
+    transfer_schema: "src/fraud_detection/schemas/transfer_schema.avsc"
+    cash_out_schema: "src/fraud_detection/schemas/cash_out_schema.avsc"
+    cash_in_schema: "src/fraud_detection/schemas/cash_in_schema.avsc"
+    debit_schema: "src/fraud_detection/schemas/debit_schema.avsc"  # Asegúrate de incluirlo aquí
 # ---------------------------------------------------
 #  Configuración de Spark Structured Streaming
 # ---------------------------------------------------

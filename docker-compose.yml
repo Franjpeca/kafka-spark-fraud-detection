@@ -19,19 +19,18 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "${KAFKA_PORT}:${KAFKA_PORT}"  # Exponer el puerto correctamente
+      - "29092:29092"   # Exponer puerto externo para host
+      - "9092:9092"     # Puerto interno para otros contenedores (opcional)
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}  # Zookeeper conectado correctamente
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092  # Escuchar en todos los interfaces
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # Usar localhost para desarrollo
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_BROKER_ID: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
-      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"  # Desactivar métricas de Confluent si no las necesitas
     volumes:
-      - ${KAFKA_DATA_DIR}/kafka:/var/lib/kafka/data  # Persistencia de datos
+      - ${KAFKA_DATA_DIR}/kafka:/var/lib/kafka/data
     restart: unless-stopped
 
 

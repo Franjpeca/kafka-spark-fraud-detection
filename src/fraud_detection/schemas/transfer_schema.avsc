@@ -1,0 +1,54 @@
+{
+  "type": "record",
+  "name": "TransferTransaction",
+  "fields": [
+    {
+      "name": "transaction_id",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "event_time_ms",
+      "type": "long"
+    },
+    {
+      "name": "type",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": "float"
+    },
+    {
+      "name": "origin_id",
+      "type": "string"
+    },
+    {
+      "name": "destination_id",
+      "type": "string"
+    },
+    {
+      "name": "country",
+      "type": "string"
+    },
+    {
+      "name": "currency",
+      "type": "string"
+    },
+    {
+      "name": "channel",
+      "type": "string"
+    },
+    {
+      "name": "device_id",
+      "type": "string"
+    },
+    {
+      "name": "is_fraud",
+      "type": "int"
+    }
+  ]
+}

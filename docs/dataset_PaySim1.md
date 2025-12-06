@@ -54,17 +54,23 @@ Estas columnas vienen de la simulación PaySim y no existen en sistemas reales e
 
 ## 4. Columnas nuevas que se añadirán (enriquecimiento)
 
-Estas no existen en PaySim, pero un sistema real sí las necesita para permitir reglas y futuras features ML.
+En el flujo de procesamiento, se agregan varias columnas adicionales. Estas columnas se añaden **a todas las transacciones**, excepto la columna `merchant`, que solo se genera para transacciones de tipo **`PAYMENT`**.
 
 | Nueva columna       | Descripción                                                                 | Motivo técnico |
 |---------------------|-----------------------------------------------------------------------------|----------------|
-| transaction_id      | UUID único para cada evento.                                                | Necesario en Kafka/Spark. |
-| timestamp           | Fecha/hora real convertida desde `step`.                                    | Streaming real. |
-| event_time_ms       | Timestamp en milisegundos para Kafka.                                       | Ordenación y particiones. |
-| country             | País del origen o destino.                                                  | Reglas por ubicación. |
-| currency            | Moneda usada.                                                               | Normalización y ML futuro. |
-| channel             | Canal de la transacción (web, mobile, atm).                                 | Reglas de fraude. |
-| device_id           | Identificador sintético del dispositivo.                                    | Reglas + features. |
+| `transaction_id`     | UUID único para cada evento.                                                | Necesario en Kafka/Spark. |
+| `timestamp`          | Fecha/hora real convertida desde `step`, con un retraso aleatorio de hasta una hora. | Streaming real. |
+| `event_time_ms`      | Timestamp en milisegundos para Kafka.                                       | Ordenación y particiones. |
+| `country`            | País del origen o destino.                                                  | Reglas por ubicación. |
+| `currency`           | Moneda usada.                                                               | Normalización y ML futuro. |
+| `channel`            | Canal de la transacción (web, mobile, atm).                                 | Reglas de fraude. |
+| `device_id`          | Identificador sintético del dispositivo.                                    | Reglas + features. |
+| `merchant`           | Nombre de la empresa (solo para transacciones de tipo `PAYMENT`).           | Reglas de fraude. |
+
+**Nota importante:**  
+- Todas las columnas son generadas de manera aleatoria **para todos los tipos de transacción** (excepto `merchant`).
+- La columna **`merchant`** se asigna solo a las transacciones de tipo **`PAYMENT`**. Para las demás transacciones (como `TRANSFER`, `CASH_OUT`, etc.), esta columna no se llena.
+
 
 ---
 
@@ -83,7 +89,7 @@ Estas no existen en PaySim, pero un sistema real sí las necesita para permitir 
 | currency           | Generada      |
 | channel            | Generada      |
 | device_id          | Generada      |
-| is_fraud           | PaySim (isFraud renombrado) |
+| is_fraud               | PaySim (isFraud renombrado) |
 
 ---
 

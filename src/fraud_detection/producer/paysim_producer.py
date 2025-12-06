@@ -18,7 +18,7 @@ kafka_broker = os.getenv("KAFKA_ADVERTISED_LISTENERS", "localhost:9092")
 # Crear productor de Kafka
 producer = KafkaProducer(
     bootstrap_servers=kafka_broker,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')  # Serializa el mensaje como JSON
 )
 
 # Rutas de los archivos Parquet

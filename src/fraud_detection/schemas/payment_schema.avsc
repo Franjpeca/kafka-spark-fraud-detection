@@ -1,0 +1,20 @@
+{
+  "namespace": "fraud_detection.paysim",
+  "type": "record",
+  "name": "PaymentTransaction",
+  "fields": [
+    { "name": "transaction_id", "type": "string" },
+    { "name": "timestamp", "type": "long" },
+    { "name": "event_time_ms", "type": ["null", "long"], "default": null },
+    { "name": "type", "type": "string" },
+    { "name": "amount", "type": "double" },
+    { "name": "origin_id", "type": "string" },
+    { "name": "destination_id", "type": ["null","string"], "default": null },
+    { "name": "country", "type": ["null","string"], "default": null },
+    { "name": "currency", "type": "string" },
+    { "name": "channel", "type": "string" },
+    { "name": "device_id", "type": ["null","string"], "default": null },
+    { "name": "is_fraud", "type": "boolean", "default": false },
+    { "name": "merchant", "type": ["null","string"], "default": null }
+  ]
+}
