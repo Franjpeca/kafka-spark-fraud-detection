@@ -1,90 +1,167 @@
 import os
 import json
 import logging
-from confluent_kafka.avro import AvroProducer
-from confluent_kafka.avro import CachedSchemaRegistryClient
-from fraud_detection.config.config_loader import get_config
+import time
 from pathlib import Path
 from dotenv import load_dotenv
-import random
-import time
 
-# Cargar las variables de entorno desde el archivo .env
+from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
+from avro.schema import parse as avro_parse
+
+from fraud_detection.config.config_loader import get_config
+
+# ------------------------------------------------------------
+# Cargar variables de entorno
+# ------------------------------------------------------------
 load_dotenv()
 
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
+# ------------------------------------------------------------
+# Configurar logging estilo profesional
+# ------------------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | payment_producer | %(levelname)s | %(message)s"
+)
 logger = logging.getLogger("payment_producer")
 
-# Cargar configuración desde YAML
+# ------------------------------------------------------------
+# Cargar config YAML
+# ------------------------------------------------------------
 cfg = get_config()
+kafka_broker = cfg["kafka"]["broker"]
+schema_registry_url = os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8081")
 
-# Obtener el broker de Kafka desde la configuración
-kafka_broker = cfg['kafka']['broker']  # Usando configuración de broker de Kafka
+# ------------------------------------------------------------
+# Cargar esquema AVRO parseado
+# ------------------------------------------------------------
+schema_path = Path(cfg["kafka"]["schema_registry"]["payment_schema"]).resolve()
 
-# Obtener la URL del Schema Registry desde las variables de entorno
-schema_registry_url = os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8081")  # Valor por defecto si no está en el .env
-
-# Crear cliente de Schema Registry
-schema_registry = CachedSchemaRegistryClient(url=schema_registry_url)
-
-# Obtener la ruta del esquema desde la configuración
-schema_path = Path(cfg['kafka']['schema_registry']['payment_schema']).resolve()  # Ruta completa
-
-# Cargar el esquema de pago
 with open(schema_path, "r") as f:
-    schema = json.load(f)
+    raw_schema = f.read()
 
-# Crear el productor Avro
+value_schema = avro_parse(raw_schema)
+
+# ------------------------------------------------------------
+# Crear cliente de Schema Registry
+# ------------------------------------------------------------
+schema_registry = CachedSchemaRegistryClient({
+    "url": schema_registry_url
+})
+
+# ------------------------------------------------------------
+# Crear AvroProducer
+# ------------------------------------------------------------
 producer = AvroProducer(
-    {'bootstrap.servers': kafka_broker},
-    default_value_schema=schema,
+    {
+        "bootstrap.servers": kafka_broker,
+        "on_delivery": lambda err, msg: logger.error(f"Delivery error: {err}") if err else None
+    },
+    default_value_schema=value_schema,
     schema_registry=schema_registry
 )
 
-# Mapeo del tópico
 topic = "paysim_payment"
 
-def produce_payment_message(message):
+
+# ------------------------------------------------------------
+# Normalización segura de mensaje según AVRO
+# ------------------------------------------------------------
+def _clean_value(value, field_type):
+    """
+    AVRO no acepta dict, list, NaN, ni tipos raros.
+    Esta función convierte todo a tipos válidos.
+    """
+    if value is None:
+        return None
+
+    # En caso de union types como ["null","string"]
+    if isinstance(field_type, list):
+        field_type = [t for t in field_type if t != "null"][0]
+
+    if field_type == "string":
+        return str(value)
+    if field_type == "int":
+        return int(value)
+    if field_type == "long":
+        return int(value)
+    if field_type == "double":
+        return float(value)
+    if field_type == "boolean":
+        return bool(value)
+
+    return value
+
+
+# ------------------------------------------------------------
+# Productor principal: genera mensajes AVRO válidos
+# ------------------------------------------------------------
+def produce_payment_message(message: dict):
     try:
-        # Asegurarse de que el mensaje no tiene estructuras no hashables (como diccionarios dentro del mensaje)
-        if isinstance(message, dict):
-            # Convertir los valores de diccionario a string si son no hashables
-            for key, value in message.items():
-                if isinstance(value, dict) or isinstance(value, list):  # Si el valor es un diccionario o lista, lo convertimos a string
-                    message[key] = str(value)
-            
-            # Producir mensaje y hacer flush
-            producer.produce(topic=topic, value=message)
-            producer.flush()  # Asegúrate de que el mensaje se envíe
-            logger.info(f"Sent payment message | transaction_id={message['transaction_id']} | amount={message['amount']} | status={message['status']}")
-        else:
-            logger.error(f"Invalid message format (not a dict): {message}")
+        clean_message = {}
+
+        for field in value_schema.fields:
+            name = field.name
+            field_type = field.type
+
+            if name in message:
+                clean_message[name] = _clean_value(message[name], field_type)
+            else:
+                clean_message[name] = getattr(field, "default", None)
+
+        logger.info(
+            f"Producing | txn={clean_message.get('transaction_id')} | "
+            f"amount={clean_message.get('amount')} | type={clean_message.get('type')}"
+        )
+
+        producer.produce(topic=topic, value=clean_message)
+        producer.flush()
+
+        logger.info(
+            f"Sent OK | txn={clean_message.get('transaction_id')} | "
+            f"amount={clean_message.get('amount')} | type={clean_message.get('type')}"
+        )
+
     except Exception as e:
-        logger.error(f"Error while sending payment message | Error: {e} | Message: {message}")
+        logger.error(f"Error sending message | {e} | msg={message}")
 
+
+# ------------------------------------------------------------
+# (Opcional) Generador sintético para debug
+# ------------------------------------------------------------
 def listen_for_events():
-    # Simular recibir eventos de forma aleatoria
-    count = 0
-    while count < 10:  # Limitamos a 10 mensajes para pruebas
-        logger.info(f"Listening for events... | Event count: {count + 1}")
-        
-        # Generamos un evento de prueba aleatorio
-        event_message = {
-            "transaction_id": f"txn_{random.randint(1000, 9999)}",
-            "amount": random.randint(10, 500),
-            "status": random.choice(["approved", "declined", "pending"]),
-            "timestamp": time.time()
-        }
-        
-        # Producimos el mensaje
-        logger.info(f"Generated event message | transaction_id={event_message['transaction_id']} | amount={event_message['amount']} | status={event_message['status']}")
-        produce_payment_message(event_message)
-        
-        count += 1
-        time.sleep(random.randint(1, 3))  # Esperamos entre 1 y 3 segundos antes de enviar el siguiente
+    logger.info(f"Starting PAYMENT producer | broker={kafka_broker}")
 
-if __name__ == "__main__":
-    logger.info(f"Starting producer... | Kafka Broker: {kafka_broker}")
-    listen_for_events()
+    for i in range(10):
+        event_message = {
+            "step": None,
+            "type": "PAYMENT",
+            "amount": 50.0 + i,
+            "nameorig": "C12345",
+            "namedest": None,
+            "isfraud": 0,
+            "isflaggedfraud": 0,
+            "timestamp": int(time.time()),
+            "customer_id": "AUTO",
+            "source_system": "test_simulator",
+            "transaction_datetime": str(time.time()),
+            "city": "Madrid",
+            "country": "Spain",
+            "currency": "EUR",
+            "channel": "ONLINE",
+            "merchant": "TestCorp",
+            "status": "approved",
+        }
+
+        logger.info(f"Generated mock event | txn=test_event_{i}")
+
+        produce_payment_message(event_message)
+        time.sleep(1)
+
     logger.info("Producer finished.")
+
+
+# ------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------
+if __name__ == "__main__":
+    listen_for_events()
