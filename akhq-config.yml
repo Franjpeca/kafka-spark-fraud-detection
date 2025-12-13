@@ -1,0 +1,50 @@
+akhq:
+  # -------------------------------
+  # Definición de conexiones
+  # -------------------------------
+  connections:
+    paysim-cluster:
+      properties:
+        bootstrap.servers: "kafka:9092"
+      schema-registry:
+        url: "http://schema-registry:8081"
+        type: confluent
+
+  # -------------------------------
+  # Opciones para la UI de Topics
+  # -------------------------------
+
+  ui-options:
+    topic:
+      # Omite ciertos datos si no se pueden obtener
+      skip-last-record: true
+      skip-consumer-groups: false
+      skip-size: false
+      skip-offsets: false
+
+    # Opciones adicionales de la UI
+    consumer-groups:
+      skip-lag: false
+      skip-topics: false
+
+    broker:
+      # Mostrar la configuración de broker en la UI
+      show-config: true
+
+# -------------------------------
+# Configuración del servidor AKHQ
+# -------------------------------
+server:
+  port: 8080
+
+# -------------------------------
+# Security (si quieres habilitar básica)
+# Opcional, puedes comentar si no la usas
+# -------------------------------
+security:
+  default-group: reader
+
+  basic-auth:
+    - username: admin
+      password: admin123
+      groups: [admin]

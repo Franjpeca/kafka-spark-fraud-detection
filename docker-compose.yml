@@ -24,6 +24,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZK_PORT}
+      # Listeners configurados para Docker interno y host
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -45,6 +47,25 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
     restart: unless-stopped
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    environment:
+      # Configuración de clúster de Kafka para la UI
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
+      KAFKA_CLUSTERS_0_ZOOKEEPER: "zookeeper:${ZK_PORT}"
+      KAFKA_CLUSTERS_0_NAME: "paysim-cluster"
+      # Opcional: si quieres habilitar autenticación simple:
+      # KAFKA_UI_AUTH_ENABLED: "true"
+      # KAFKA_UI_USERNAME: "admin"
+      # KAFKA_UI_PASSWORD: "admin123"
+    ports:
+      - "8085:8080"  # Kafka UI expuesto en 8085 local
+    depends_on:
+      - kafka
+      - zookeeper
+    restart: unless-stopped
+
   spark-master:
     image: apache/spark:3.5.2
     container_name: spark-master
@@ -53,7 +74,7 @@ services:
       SPARK_MASTER_HOST: spark-master
     ports:
       - "${SPARK_MASTER_PORT}:${SPARK_MASTER_PORT}"
-      - "8080:8080"
+      - "8083:8080"  # Spark Master UI
     volumes:
       - ${SPARK_MASTER_LOGS}:/opt/spark/logs
     restart: unless-stopped
