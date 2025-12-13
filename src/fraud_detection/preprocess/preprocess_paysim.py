@@ -1,6 +1,3 @@
-# PREPROCESADO + ENRIQUECIMIENTO + DIVISIÓN EN PARQUETS POR CHUNK
-# Cada parquet representa una "fuente" distinta para Kafka
-
 from pathlib import Path
 import pandas as pd
 import random
@@ -22,7 +19,6 @@ fake = Faker()
 
 CHUNK_SIZE = 75000
 
-
 # ---------------------------------------------------------
 # Enriquecimiento por chunk
 # ---------------------------------------------------------
@@ -31,17 +27,21 @@ def enrich_chunk(df: pd.DataFrame, source_label: str) -> pd.DataFrame:
     if n == 0:
         return df
 
+    # Generar un ID único para cada transacción
+    df["transaction_id"] = [str(uuid.uuid4()) for _ in range(n)]  # Generar un ID único para cada fila
     df["customer_id"] = [str(uuid.uuid4()) for _ in range(n)]
     df["source_system"] = source_label
 
+    # Asegurarse de que 'timestamp' esté en formato largo (int)
     if "timestamp" in df.columns:
-        df["transaction_datetime"] = df["timestamp"].apply(
-            lambda ts: datetime.fromtimestamp(ts) +
-                       timedelta(seconds=random.randint(0, 3600))
-        )
-    else:
-        df["transaction_datetime"] = datetime.now()
+        df["timestamp"] = df["timestamp"].apply(lambda x: int(x) if pd.notna(x) else None)
 
+    # Convertir 'timestamp' a 'transaction_datetime' (formato ISO 8601)
+    df["transaction_datetime"] = df["timestamp"].apply(
+        lambda ts: datetime.fromtimestamp(ts).isoformat() if pd.notna(ts) else None
+    )
+
+    # Enriquecer con más datos
     df["city"] = [fake.city() for _ in range(n)]
     df["country"] = [fake.country() for _ in range(n)]
     df["currency"] = [random.choice(["EUR", "USD", "GBP"]) for _ in range(n)]

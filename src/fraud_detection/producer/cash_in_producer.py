@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
-import uuid
+import uuid  # Asegúrate de importar el módulo uuid
 
 from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
 from avro.schema import parse as avro_parse
@@ -17,9 +17,9 @@ load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s | payment_producer | %(levelname)s | %(message)s"
+    format="%(asctime)s | cash_in_producer | %(levelname)s | %(message)s"
 )
-logger = logging.getLogger("payment_producer")
+logger = logging.getLogger("cash_in_producer")
 
 # ============================================================
 # Cargar configuración general
@@ -31,7 +31,7 @@ schema_registry_url = os.getenv("SCHEMA_REGISTRY_URL", "http://localhost:8081")
 # ============================================================
 # Cargar esquema AVRO
 # ============================================================
-schema_path = Path(cfg["kafka"]["schema_registry"]["payment_schema"]).resolve()
+schema_path = Path(cfg["kafka"]["schema_registry"]["cash_in_schema"]).resolve()
 with open(schema_path, "r") as f:
     raw_schema = f.read()
 
@@ -51,7 +51,7 @@ producer = AvroProducer(
     schema_registry=schema_registry
 )
 
-topic = "paysim_payment"
+topic = "paysim_cash_in"
 
 # ============================================================
 # Normalización segura
@@ -80,7 +80,7 @@ def _clean_value(value, field_type):
 # ============================================================
 # FUNCIÓN FINAL: PRODUCIR MENSAJE AL RECIBIRLO DEL SIMULADOR
 # ============================================================
-def produce_payment_message(message: dict):
+def produce_cash_in_message(message: dict):
     try:
         clean_message = {}
 

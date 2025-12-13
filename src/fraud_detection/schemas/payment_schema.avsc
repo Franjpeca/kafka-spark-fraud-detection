@@ -3,6 +3,8 @@
   "type": "record",
   "name": "PaymentTransaction",
   "fields": [
+    { "name": "transaction_id", "type": ["null", "string"], "default": null },
+
     { "name": "step", "type": ["null", "int"], "default": null },
     { "name": "type", "type": "string" },
     { "name": "amount", "type": "double" },
@@ -14,18 +16,17 @@
     { "name": "isflaggedfraud", "type": ["null", "int"], "default": null },
 
     { "name": "timestamp", "type": ["null", "long"], "default": null },
+    { "name": "transaction_datetime", "type": ["null", "string"], "default": null },
 
     { "name": "customer_id", "type": "string" },
     { "name": "source_system", "type": "string" },
 
-    { "name": "transaction_datetime", "type": ["null", "string"], "default": null },
-
-    { "name": "city", "type": "string" },
-    { "name": "country", "type": "string" },
-    { "name": "currency", "type": "string" },
-    { "name": "channel", "type": "string" },
+    { "name": "city", "type": ["null", "string"], "default": null },
+    { "name": "country", "type": ["null", "string"], "default": null },
+    { "name": "currency", "type": ["null", "string"], "default": null },
+    { "name": "channel", "type": ["null", "string"], "default": null },
 
     { "name": "merchant", "type": ["null", "string"], "default": null },
-    { "name": "status", "type": "string" }
+    { "name": "status", "type": ["null", "string"], "default": null }
   ]
 }
