@@ -1,0 +1,21 @@
+{
+  "name": "postgresql-sink-cash-in-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "paysim_cash_in",
+    "connection.url": "jdbc:postgresql://postgresql:5432/${PG_DB}",
+    "connection.user": "${PG_USER}",
+    "connection.password": "${PG_PASSWORD}",
+    "insert.mode": "upsert",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "pk.mode": "record_value",
+    "pk.fields": "transaction_id",
+    "table.name.format": "cash_in_transaction",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false"
+  }
+}

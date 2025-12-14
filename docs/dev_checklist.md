@@ -21,7 +21,7 @@
 - [X] Verificar que las tablas se creen correctamente.
 
 ### 2. Configuración de Kafka Connect:
-- [ ] Instalar Kafka Connect.
+- [X] Instalar Kafka Connect.
 - [ ] Configurar el conector JDBC Sink para PostgreSQL, incluyendo:
   - [ ] Las credenciales de PostgreSQL (host, puerto, usuario, contraseña).
   - [ ] El nombre de la base de datos.

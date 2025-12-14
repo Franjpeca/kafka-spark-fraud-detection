@@ -112,6 +112,10 @@ Tendremos un "microservicios" usando PostgreSQL para guardar los eventos que vie
 
 El conector de Kafka Connect está configurado para insertar o actualizar los datos en PostgreSQL, evitando duplicados y asegurando que no se pierdan eventos si hay errores. De esta manera, podemos mantener un historial completo de los eventos y hacer consultas o análisis posteriores cuando sea necesario.
 
+Se crea un conector de Kafka por cada topico, a través de Kafka Connect, pues cada topico se vuelca en su correspondiente tabla en la base de datos. 
+
+Para lograr lo mencionado, debemos crear nuestra propia imagen de Kafka Connect porque la imagen base delega en el usuario añadir las funcionalidades que necesita, como el conector JDBC Sink y otros conectores que utilizaremos. Esto es lo que indica la documentación oficial de Kafka Connect. Al construir nuestra imagen personalizada, podemos agregar solo los conectores y configuraciones necesarias, como el soporte para PostgreSQL y MongoDB, asegurándonos de que todo funcione correctamente para nuestro proyecto sin tener que depender de una instalación manual de conectores en cada ejecución.
+
 # 2. Spark
 
 # 3. Resto de microservicios
