@@ -34,6 +34,45 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     restart: unless-stopped
 
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: kafka-connect
+    depends_on:
+      - kafka
+      - schema-registry
+
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONNECT_LISTENERS: "http://0.0.0.0:8084"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_REST_PORT: 8084
+      CONNECT_GROUP_ID: "kafka-connect-group"
+      CONNECT_CONFIG_STORAGE_TOPIC: "_connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "_connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "_connect-status"
+
+      # JDBC Sink config
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_JDBC_URL: "jdbc:postgresql://postgresql:5432/${PG_DB}"
+      CONNECT_JDBC_USER: "${PG_USER}"
+      CONNECT_JDBC_PASSWORD: "${PG_PASSWORD}"
+      CONNECT_JDBC_DRIVER_CLASS: "org.postgresql.Driver"
+      CONNECT_TABLE_NAME_FORMAT: "my_table"
+      CONNECT_INSERT_MODE: "upsert"
+
+      # Converters
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+
+      # Si usaras Avro:
+      # CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      # CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+
+    ports:
+      - "8084:8084"
+    restart: unless-stopped
+
+
   schema-registry:
     image: confluentinc/cp-schema-registry:7.5.0
     container_name: schema-registry
@@ -101,8 +140,39 @@ services:
       - ${MONGO_DATA_DIR}:/data/db
     restart: unless-stopped
 
+
+  postgresql:
+    image: postgres:13
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    ports:
+      - "${PG_PORT}:${PG_PORT}"
+    volumes:
+      - ${PG_DATA_DIR}:/var/lib/postgresql/data
+    restart: unless-stopped
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "8082:80"  # Exponemos el puerto 8082 para pgAdmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL}"
+      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_DEFAULT_PASSWORD}"
+    depends_on:
+      - postgresql
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+
 volumes:
   spark_master:
   spark_worker:
   mongo:
   kafka:
+  pgadmin-data:

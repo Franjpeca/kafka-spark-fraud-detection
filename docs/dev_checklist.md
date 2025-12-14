@@ -14,11 +14,11 @@
 ## Microservicio historico postgresql
 
 ### 1. Configuración del servicio PostgreSQL:
-- [ ] Instalar y configurar PostgreSQL.
-- [ ] Verificar que PostgreSQL esté en funcionamiento y accesible.
-- [ ] Configurar las credenciales de PostgreSQL en los secrets (host, puerto, usuario, contraseña).
-- [ ] Crear la base de datos y las tablas necesarias.
-- [ ] Verificar que las tablas se creen correctamente.
+- [X] Instalar y configurar PostgreSQL.
+- [X] Verificar que PostgreSQL esté en funcionamiento y accesible.
+- [X] Configurar las credenciales de PostgreSQL en los secrets (host, puerto, usuario, contraseña).
+- [X] Crear la base de datos y las tablas necesarias.
+- [X] Verificar que las tablas se creen correctamente.
 
 ### 2. Configuración de Kafka Connect:
 - [ ] Instalar Kafka Connect.

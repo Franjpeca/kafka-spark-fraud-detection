@@ -47,6 +47,14 @@ paths:
   data_gold:
     root: "data/gold/"
 
+  # -------------------------------
+  # Rutas de scripts SQL para PostgreSQL
+  # -------------------------------
+  postgresql_sql:
+    create_tables: "src/fraud_detection/postgresql/create_tables.sql"
+    init_data: "src/fraud_detection/postgresql/init_data.sql"
+
+
 # ---------------------------------------------------
 #  Configuración de Logging global
 # ---------------------------------------------------
@@ -88,4 +96,9 @@ kafka:
 # ---------------------------------------------------
 #  Configuración de PostgreSQL
 # ---------------------------------------------------
-
+postgresql:
+  host: "postgresql"  # El nombre del servicio definido en Docker Compose
+  port: "${PG_PORT}"
+  user: "${PG_USER}"
+  password: "${PG_PASSWORD}"
+  database: "${PG_DB}"

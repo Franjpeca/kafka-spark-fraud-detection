@@ -9,3 +9,5 @@ confluent-kafka
 urllib3
 requests
 avro
+...
+psycopg2
