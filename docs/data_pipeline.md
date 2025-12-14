@@ -104,3 +104,14 @@ Logeo de Actividades: Cada productor y el simulador registran las actividades de
 Conclusión
 
 La implementación de estos productores y el uso de Kafka como intermediario permite simular una variedad de eventos financieros de forma asíncrona y distribuida, como si provinieran de múltiples canales en tiempo real.
+
+
+# 2. Historico en PostgreSQL
+
+Tendremos un "microservicios" usando PostgreSQL para guardar los eventos que vienen de Kafka. Para hacer esto, usamos Kafka Connect con un conector JDBC Sink, que se encarga de leer los mensajes de Kafka y almacenarlos directamente en PostgreSQL. Esto hace que no tengamos que escribir código extra para mover los datos entre Kafka y la base de datos, y asegura que los eventos se guarden de forma fiable.
+
+El conector de Kafka Connect está configurado para insertar o actualizar los datos en PostgreSQL, evitando duplicados y asegurando que no se pierdan eventos si hay errores. De esta manera, podemos mantener un historial completo de los eventos y hacer consultas o análisis posteriores cuando sea necesario.
+
+# 2. Spark
+
+# 3. Resto de microservicios
