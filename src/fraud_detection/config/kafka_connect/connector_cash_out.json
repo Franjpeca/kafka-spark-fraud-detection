@@ -1,0 +1,21 @@
+{
+  "name": "postgresql-sink-cash-out-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "paysim_cash_out",
+    "connection.url": "jdbc:postgresql://postgresql:5432/paysim_historic_db",
+    "connection.user": "pguser",
+    "connection.password": "pgpass",
+    "insert.mode": "upsert",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "pk.mode": "record_value",
+    "pk.fields": "transaction_id",
+    "table.name.format": "cash_out_transaction",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false"
+  }
+}
