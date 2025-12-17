@@ -116,6 +116,12 @@ Se crea un conector de Kafka por cada topico, a través de Kafka Connect, pues c
 
 Para lograr lo mencionado, debemos crear nuestra propia imagen de Kafka Connect porque la imagen base delega en el usuario añadir las funcionalidades que necesita, como el conector JDBC Sink y otros conectores que utilizaremos. Esto es lo que indica la documentación oficial de Kafka Connect. Al construir nuestra imagen personalizada, podemos agregar solo los conectores y configuraciones necesarias, como el soporte para PostgreSQL y MongoDB, asegurándonos de que todo funcione correctamente para nuestro proyecto sin tener que depender de una instalación manual de conectores en cada ejecución.
 
-# 2. Spark
+# 2. Métricas y dashboard en Grafana
+
+Para las métricas en tiempo real se ha creado un microservicio independiente que consume directamente los mensajes de Kafka desde todos los topics de transacciones usando su propio consumer group. El propio servicio integra el consumidor y el cálculo de métricas, manteniendo contadores en memoria para obtener información básica como el número total de eventos, eventos por tipo, detección de IDs duplicados y errores de consumo. 
+
+Estas métricas se exponen a través de un endpoint /metrics en formato Prometheus, que es scrappeado periódicamente. Grafana se conecta a Prometheus y permite visualizar los datos con distintos intervalos de refresco (por ejemplo cada 5 segundos o cada minuto), sin almacenar los eventos completos ni realizar cálculos en el dashboard. 
+
+De esta forma se obtiene visibilidad en tiempo casi real del sistema, manteniendo esta parte separada del histórico en PostgreSQL y del procesamiento más complejo en Spark.
 
 # 3. Resto de microservicios
