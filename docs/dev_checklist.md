@@ -50,6 +50,7 @@
 - [X] Definir el objetivo del microservicio (metricas simples en tiempo real).
 - [X] Confirmar que no se almacenan eventos completos.
 - [X] Definir las metricas a calcular (conteos, medias, tasas).
+  - HAY QUE AÑADIR, AL SER SIMULADOS, TIEMPO EN LOS DATOS PARA PODER HACER CALCULOS DE TIEMPO
   - [ ] Total de eventos consumidos
   - [ ] Total de eventos por tipo (por topic)
   - [ ] Eventos por segundo / minuto (ventana configurable)
@@ -60,20 +61,20 @@
 - [ ] Configurar variables de entorno y parametros en config.yml.
 
 ### 2. Configuracion de Kafka:
-- [ ] Definir el topic o topics de Kafka a consumir.
-- [ ] Crear un consumer group especifico para metricas.
-- [ ] Configurar conexion a Kafka (broker, seguridad si aplica).
-- [ ] Verificar que el consumidor lee mensajes correctamente.
+- [X] Definir el topic o topics de Kafka a consumir.
+- [X] Crear un consumer group especifico para metricas.
+- [X] Configurar conexion a Kafka (broker, seguridad si aplica).
+- [X] Verificar que el consumidor lee mensajes correctamente.
 
 ### 3. Calculo de metricas en streaming:
-- [ ] Implementar contadores en memoria (total y por tipo).
-- [ ] Implementar acumuladores para medias.
-- [ ] Definir ventana temporal de calculo (1s, 5s, etc).
-- [ ] Implementar flush periodico de metricas.
+- [X] Implementar contadores en memoria (total y por tipo).
+- [X] Implementar acumuladores para medias.
+- [X] Definir ventana temporal de calculo (1s, 5s, etc).
+- [X] Implementar flush periodico de metricas.
 - [ ] Verificar que no se guardan eventos en base de datos.
 
 ### 4. Sistema de metricas:
-- [ ] Elegir sistema de metricas (Prometheus o InfluxDB).
+- [ ] Levantar Prometheus
 - [ ] Configurar el sistema de metricas.
 - [ ] Definir nombres de metricas y labels/tags.
 - [ ] Verificar que las metricas se almacenan correctamente.

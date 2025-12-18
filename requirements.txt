@@ -11,3 +11,6 @@ requests
 avro
 ...
 psycopg2
+prometheus-client
+fastavro
+confluent-kafka[avro]

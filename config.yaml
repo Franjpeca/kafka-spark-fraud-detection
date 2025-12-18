@@ -102,3 +102,21 @@ postgresql:
   user: "${PG_USER}"
   password: "${PG_PASSWORD}"
   database: "${PG_DB}"
+
+# ---------------------------------------------------
+#  Configuración del consumidor para metricas
+# ---------------------------------------------------
+metrics:
+  service_name: "metrics_service"
+
+  consumer:
+    group_id: "metrics-service"
+    auto_offset_reset: "latest"
+    enable_auto_commit: true
+
+  server:
+    port: 8000
+
+  duplicates:
+    enabled: true
+    ttl_seconds: 300

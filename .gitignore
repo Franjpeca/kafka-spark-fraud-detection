@@ -39,3 +39,5 @@ volumes/
 # Ignorar el archivo docker-compose.override.yml si no se usa en producción
 docker-compose.override.yml
 
+
+.env
