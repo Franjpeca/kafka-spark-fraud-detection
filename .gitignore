@@ -1,5 +1,7 @@
 # Ignorar archivos de entorno virtual (Python)
 .venv/
+.venv-training/
+
 
 # Ignorar directorios de caché de Python
 __pycache__/
