@@ -22,7 +22,10 @@ paths:
 
     datasets:
       root: "data/raw/datasets/"
-      paysim: "data/raw/datasets/PaySim1.csv"
+
+      paysim_original: "data/raw/datasets/paysim_original.csv"
+      paysim_train: "data/raw/datasets/paysim_train.csv"
+      paysim_stream: "data/raw/datasets/paysim_stream.csv"
 
   # -------------------------------
   # Capa BRONZE (datos limpiados sin transformar)

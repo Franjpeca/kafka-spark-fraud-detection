@@ -41,5 +41,14 @@ volumes/
 # Ignorar el archivo docker-compose.override.yml si no se usa en producción
 docker-compose.override.yml
 
-
 .env
+
+mlruns/
+
+# Pytest / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# OS temp
+*.tmp
