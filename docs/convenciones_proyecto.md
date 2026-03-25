@@ -76,7 +76,7 @@ pytest --cov=src
 
 6. Los tests deben usar imports basados en el paquete.
 
-## 6. Convenciones de Arquitectura — Microservicios & Flujo de Datos
+## 6. Convenciones de Arquitectura - Microservicios y Flujo de Datos
 
 El sistema está diseñado con una arquitectura de microservicios y se comunica a través de Kafka como bus de eventos. Esto permite escalabilidad, desacoplamiento y flexibilidad.
 
